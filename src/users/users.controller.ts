@@ -1,7 +1,6 @@
 import { Controller, Get, Param, ParseUUIDPipe, Post, Body, Patch, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './interface/user';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 @Controller('users')
 export class UsersController {
@@ -17,12 +16,6 @@ export class UsersController {
     @Get(':id')
     async readUserById(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
         return await this.usersService.getUsersById(id)
-    }
-
-    @Post()
-    async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
-        let { name, email } = createUserDto
-        return await this.usersService.createUser(name, email);
     }
 
     @Patch(':id')

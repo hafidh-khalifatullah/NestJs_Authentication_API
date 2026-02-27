@@ -12,7 +12,8 @@ export enum Status {
 export interface User {
     readonly id: string,
     name: string,
-    email?: string,
+    email: string,
+    password: string,
     role: Role,
     status: Status,
 }

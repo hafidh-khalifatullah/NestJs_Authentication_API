@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
+import { UsersRepository } from './repository/users.repository';
 import { User } from './interface/user';
 import { mapPgError } from './utils/users.pg-error-map';
 @Injectable()
@@ -7,14 +7,6 @@ export class UsersService {
     constructor(
         private readonly usersRepository: UsersRepository
     ) { }
-
-    async createUser(name: string, email?: string): Promise<User> {
-        try {
-            return await this.usersRepository.createUser(name, email)
-        } catch (e: unknown) {
-            mapPgError(e)
-        }
-    }
 
     async getUsers(): Promise<User[]> {
         return this.usersRepository.findAll()
