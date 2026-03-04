@@ -1,13 +1,15 @@
-import { Controller, Get, Param, ParseUUIDPipe, Post, Body, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Post, Body, Patch, Delete, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './interface/user';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 @Controller('users')
 export class UsersController {
     constructor(
         private readonly usersService: UsersService
     ) { }
 
+    @UseGuards(AuthGuard)
     @Get()
     async readUsers(): Promise<User[]> {
         return await this.usersService.getUsers()

@@ -54,7 +54,7 @@ export class UsersRepository {
 
     async findByEmail(email: string): Promise<User> {
         const query: string = `
-            SELECT password
+            SELECT id, password, role
             FROM users
             WHERE email = $1
         `
