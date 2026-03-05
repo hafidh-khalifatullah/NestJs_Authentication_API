@@ -63,7 +63,7 @@ This approach helps build a stronger understanding of **backend fundamentals**.
 
 The project follows the **modular architecture** encouraged by NestJS.
 
-
+```text
 src
 │
 ├── auth
@@ -80,7 +80,7 @@ src
 │   └── postgres.provider.ts
 │
 └── main.ts
-
+```
 
 Key design decisions:
 
@@ -93,7 +93,7 @@ Key design decisions:
 
 # 🔐 Authentication Flow
 
-
+```mermaid
 flowchart TD
 
 A[User Register] --> B[Hash Password with bcrypt]
