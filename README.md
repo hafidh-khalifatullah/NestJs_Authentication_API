@@ -3,11 +3,12 @@
 ![NestJS](https://img.shields.io/badge/NestJS-Backend-red)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
 ![JWT](https://img.shields.io/badge/Auth-JWT-green)
-![Node.js](https://img.shields.io/badge/Driver-pg-yellow)
+![Driver](https://img.shields.io/badge/Driver-pg-yellow)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 A simple **Authentication REST API** built with **NestJS** and **PostgreSQL** implementing a secure **JWT authentication system** using **Access Token** and **Refresh Token**.
 
-This project intentionally avoids using **ORMs or Passport** in order to understand the **core mechanics of authentication, database interaction, and token handling**.
+This project intentionally **does not use ORM or Passport** in order to better understand the **core mechanics of authentication, token validation, and database interaction**.
 
 Instead, the project uses:
 
@@ -15,7 +16,7 @@ Instead, the project uses:
 * Direct **JWT service**
 * Manual **Auth Guard implementation**
 
-This approach helps build a stronger understanding of **backend fundamentals**.
+This helps build stronger **backend fundamentals** and deeper understanding of authentication systems.
 
 ---
 
@@ -46,7 +47,7 @@ This approach helps build a stronger understanding of **backend fundamentals**.
 ### Database Driver
 
 * **pg (node-postgres)**
-  Used instead of ORM to directly interact with the database.
+  Used instead of ORM to interact directly with the database.
 
 ### Authentication
 
@@ -61,65 +62,132 @@ This approach helps build a stronger understanding of **backend fundamentals**.
 
 # 🏗 Architecture Overview
 
-The project follows the **modular architecture** encouraged by NestJS.
+The project follows the **modular architecture** recommended by NestJS.
 
-```text
+```
 src
 │
-├── auth
-│   ├── auth.controller.ts
-│   ├── auth.service.ts
-│   ├── auth.guard.ts
-│   └── dto
-│
-├── user
-│   ├── user.service.ts
-│   └── user.repository.ts
+├── modules
+│   ├── auth
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   ├── auth.guard.ts
+│   │   └── dto
+│   │
+│   └── users
+│       ├── users.service.ts
+│       └── users.repository.ts
 │
 ├── database
+│   ├── postgres.module.ts
 │   └── postgres.provider.ts
+│
+├── common
+│   ├── guards
+│   └── utils
 │
 └── main.ts
 ```
 
 Key design decisions:
 
-* **No ORM used**
-* Database queries are written manually using `pg`
-* Authentication guard is implemented manually without Passport
-* Clear separation between **controller**, **service**, and **data access**
+* No ORM used
+* Queries written manually using `pg`
+* Custom Auth Guard without Passport
+* Clear separation between **controller**, **service**, and **data layer**
 
 ---
 
 # 🔐 Authentication Flow
 
 ```mermaid
-flowchart TD
+sequenceDiagram
 
-A[User Register] --> B[Hash Password with bcrypt]
-B --> C[Store User in PostgreSQL]
+participant User
+participant API
+participant DB
 
-D[User Login] --> E[Validate Password]
-E --> F[Generate Access Token]
-E --> G[Generate Refresh Token]
+User->>API: Register
+API->>API: Hash password (bcrypt)
+API->>DB: Store user
 
-G --> H[Hash Refresh Token SHA256]
-H --> I[Store Token in Database]
+User->>API: Login
+API->>DB: Get user by email
+API->>API: Verify password
 
-F --> J[Access Protected API]
+API->>API: Generate Access Token
+API->>API: Generate Refresh Token
 
-K[Access Token Expired] --> L[Send Refresh Token]
-L --> M[Validate Refresh Token]
-M --> N[Generate New Access Token]
+API->>API: Hash Refresh Token (SHA256)
+API->>DB: Store refresh token
+
+API->>User: access_token + refresh_token
+
+User->>API: Request Protected API
+API->>API: Verify Access Token
+API->>User: Response
+
+User->>API: Refresh Token
+API->>DB: Verify token hash
+API->>API: Generate new access token
+API->>User: New Access Token
 ```
+
+---
+
+# 🗄 Database Schema
+
+```mermaid
+erDiagram
+
+users {
+  uuid id PK
+  varchar name
+  varchar email
+  varchar password
+  timestamp created_at
+}
+
+refresh_tokens {
+  uuid id PK
+  uuid user_id FK
+  text token_hash
+  timestamp expires_at
+  timestamp created_at
+}
+
+users ||--o{ refresh_tokens : has
+```
+
+### Table Explanation
+
+#### users
+
+| field      | description            |
+| ---------- | ---------------------- |
+| id         | unique identifier      |
+| name       | user name              |
+| email      | user email             |
+| password   | bcrypt hashed password |
+| created_at | timestamp user created |
+
+#### refresh_tokens
+
+| field      | description                 |
+| ---------- | --------------------------- |
+| id         | token id                    |
+| user_id    | reference to user           |
+| token_hash | sha256 hashed refresh token |
+| expires_at | expiration time             |
+| created_at | token creation timestamp    |
 
 ---
 
 # 🔒 Security Implementation
 
-## Password Hashing
+### Password Hashing
 
-Passwords are hashed using **bcrypt** before being stored.
+Passwords are never stored in plain text.
 
 ```
 password → bcrypt → stored in database
@@ -127,7 +195,7 @@ password → bcrypt → stored in database
 
 ---
 
-## Refresh Token Hashing
+### Refresh Token Hashing
 
 Refresh tokens are hashed before storing them.
 
@@ -135,17 +203,17 @@ Refresh tokens are hashed before storing them.
 refresh_token → sha256 → stored in database
 ```
 
-This prevents attackers from directly using the refresh token if the database is compromised.
+If the database is compromised, attackers **cannot directly reuse refresh tokens**.
 
 ---
 
-## Route Protection
+### Route Protection
 
 Protected routes use a **custom Auth Guard** that:
 
-1. Extracts the JWT from the request header
-2. Verifies the token using `JwtService`
-3. Attaches the user payload to the request object
+1. Extracts JWT from the request header
+2. Verifies token using `JwtService`
+3. Attaches payload to the request object
 
 Example header:
 
@@ -163,7 +231,7 @@ Authorization: Bearer access_token
 POST /auth/register
 ```
 
-Example request:
+Example Request
 
 ```json
 {
@@ -181,7 +249,16 @@ Example request:
 POST /auth/login
 ```
 
-Response:
+Example Request
+
+```json
+{
+  "email": "john@mail.com",
+  "password": "password123"
+}
+```
+
+Response
 
 ```json
 {
@@ -194,21 +271,76 @@ Response:
 
 ## Refresh Token
 
+Used to generate a **new access token** when the current one expires.
+
 ```
 POST /auth/refresh
 ```
 
-Used to generate a new access token using the refresh token.
+### Request Body
+
+```json
+{
+  "refresh_token": "your_refresh_token"
+}
+```
+
+### Process
+
+1. Server receives refresh token
+2. Token is hashed using **SHA256**
+3. Server checks token hash in database
+4. If valid → generate new access token
+5. If invalid → request rejected
+
+### Response
+
+```json
+{
+  "access_token": "new_access_token"
+}
+```
 
 ---
 
 ## Logout
 
+Used to **revoke refresh token**.
+
 ```
 POST /auth/logout
 ```
 
-Removes refresh token from the database.
+### Request Body
+
+```json
+{
+  "refresh_token": "your_refresh_token"
+}
+```
+
+### Process
+
+1. Refresh token received
+2. Token hashed with **SHA256**
+3. Token hash removed from database
+4. User session invalidated
+
+---
+
+## Example Protected Route
+
+Example of accessing a protected API endpoint.
+
+```
+GET /users/profile
+```
+
+Header:
+
+```
+Authorization: Bearer access_token
+```
 
 ---
 
@@ -220,7 +352,7 @@ Clone repository
 git clone https://github.com/yourusername/nest-auth-api.git
 ```
 
-Move into project directory
+Move into project folder
 
 ```
 cd nest-auth-api
@@ -248,17 +380,19 @@ ACCESS_TOKEN_EXPIRES=15m
 REFRESH_TOKEN_EXPIRES=7d
 ```
 
+You may also provide an `.env.example` file in the repository.
+
 ---
 
 # ▶ Running the Application
 
-Development mode:
+Run development server:
 
 ```
 npm run start:dev
 ```
 
-Server will run on:
+Server will run at:
 
 ```
 http://localhost:3000
@@ -268,14 +402,14 @@ http://localhost:3000
 
 # 🎯 Learning Objectives
 
-This project was built to better understand:
+This project helped me understand:
 
 * NestJS modular architecture
 * JWT authentication flow
 * Access Token & Refresh Token strategy
 * Password hashing best practices
-* Token hashing security
-* Direct PostgreSQL usage with `pg`
+* Refresh token hashing security
+* Direct PostgreSQL queries using `pg`
 * Implementing authentication **without relying on ORM or Passport**
 
 ---
@@ -290,7 +424,7 @@ Planned improvements:
 * Swagger API Documentation
 * Unit Testing
 * Docker Support
-* Database migration system
+* CI/CD Pipeline
 
 ---
 
@@ -299,3 +433,5 @@ Planned improvements:
 **Hafidh**
 
 Backend Developer (Learning Journey)
+
+If you found this project interesting, feel free to **star the repository** ⭐
