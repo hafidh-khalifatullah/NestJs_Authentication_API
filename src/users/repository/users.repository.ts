@@ -8,7 +8,7 @@ export class UsersRepository {
         private readonly pg: Pool
     ) { }
 
-    async create(name: string, password: string, email: string): Promise<User | undefined> {
+    async create(name: string, password: string, email: string): Promise<Omit<User, 'password'> | undefined> {
         const query: string = `
             INSERT INTO users (name, password, email)
             VALUES ($1, $2, $3) 
@@ -19,7 +19,7 @@ export class UsersRepository {
         return user
     }
 
-    async findAll(): Promise<User[] | []> {
+    async findAll(): Promise<Omit<User, "password">[] | []> {
         const query: string = `
             SELECT id, name, email, role, status FROM users
             WHERE deleted_at IS NULL
@@ -29,7 +29,7 @@ export class UsersRepository {
         return users
     }
 
-    async findById(id: string): Promise<User | undefined> {
+    async findById(id: string): Promise<Omit<User, 'password'> | undefined> {
         const query: string = `
             SELECT id, name, email, role, status
             FROM users
@@ -42,7 +42,7 @@ export class UsersRepository {
 
     async findByEmail(email: string): Promise<User | undefined> {
         const query: string = `
-            SELECT id, name, email, role, status
+            SELECT id, name, email, password, role, status
             FROM users
             WHERE email = $1
         `
@@ -51,7 +51,7 @@ export class UsersRepository {
         return user
     }
 
-    async update(id: string, update: Partial<Omit<User, 'id' | 'name'>>): Promise<User | undefined> {
+    async update(id: string, update: Partial<Omit<User, 'id' | 'password'>>): Promise<Omit<User, 'password'> | undefined> {
         const entries = Object.entries(update)
         const setClause = entries
             .map(([key], index) => `${key} = $${index + 1}`)
@@ -76,12 +76,13 @@ export class UsersRepository {
             UPDATE users
             SET deleted_at = NOW()
             WHERE id = $1 AND deleted_at IS NULL
+            RETURNING id, name, email
         `
         const result = await this.pg.query(query, [id])
         if (result.rowCount === 1) {
             return true
         } else {
-            throw new Error('USER_NOT_FOUND')
+            return false
         }
     }
 }
