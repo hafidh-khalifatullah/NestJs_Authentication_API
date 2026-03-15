@@ -2,10 +2,10 @@ import { BadRequestException, Inject, Injectable, InternalServerErrorException, 
 import { BCRYPT, SHA256 } from '../auth.constants';
 import { UsersRepository } from 'src/modules/users/infrasturcture/repositories/users.repository';
 import { User } from 'src/modules/users/domain/entities/user';
-import { BcryptService } from './bcrypt.service';
-import { Sha256Service } from './sha256.service';
+import { BcryptService } from '../domain/service/bcrypt.service';
+import { Sha256Service } from '../domain/service/sha256.service';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshTokenRepository } from '../repository/refresh_token.repository';
+import { RefreshTokenRepository } from '../infrastructure/repository/refresh_token.repository';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { DateHelper } from '../helper/date';
@@ -25,7 +25,8 @@ export class AuthService {
     async register(payload: Pick<User, 'name' | 'email' | 'password'>): Promise<Omit<User, 'password'>> {
         const { name, email, password } = payload
         const hashedPassword = await this.bcryptService.hash(password)
-        return await this.usersRepository.create(name, hashedPassword, email)
+        const user = await this.usersRepository.create(name, hashedPassword, email)
+        return user
     }
 
     async login(

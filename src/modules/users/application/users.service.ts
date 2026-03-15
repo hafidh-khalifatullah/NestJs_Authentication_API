@@ -7,19 +7,14 @@ export class UsersService {
         private readonly usersRepository: UsersRepository
     ) { }
 
-    async getUsers(): Promise<User[]> {
+    async getUsers(): Promise<Omit<User, 'password'>[]> {
         return this.usersRepository.findAll()
     }
 
-    async getUsersById(id: string): Promise<User> {
-        try {
-            return await this.usersRepository.findById(id)
-        } catch (e: unknown) {
-            if (e instanceof Error && e.message === 'user tidak terdaftar') {
-                throw new NotFoundException('User tidak ditemukan')
-            }
-            mapPgError(e)
-        }
+    async getUsersById(id: string): Promise<Omit<User, 'password'>> {
+        const user = await this.usersRepository.findById(id)
+        if (!user) throw new NotFoundException('USER_NOT_FOUND')
+        return user
     }
 
     /* 
@@ -28,29 +23,16 @@ export class UsersService {
      Object.keys => mengubah keys object menjadi array key
      Object.values => mengubah values object menjadi array value
      */
-    async updateUser(id: string, data: Partial<Omit<User, 'id' | 'name'>>): Promise<User> {
-        const payload = Object.fromEntries(
-            Object.entries(data).filter(([, value]) => value !== undefined)
-        )
-        if (Object.keys(payload).length === 0) throw new BadRequestException('data update kosong')
-        try {
-            return await this.usersRepository.update(id, payload)
-        } catch (e: unknown) {
-            if (e instanceof Error && e.message === 'user tidak ditemukan') {
-                throw new NotFoundException('User tidak ditemukan')
-            }
-            mapPgError(e)
-        }
+    async updateUser(id: string, data: Partial<Omit<User, 'id' | 'name'>>): Promise<Omit<User, 'password'>> {
+        const user = await this.usersRepository.findById(id)
+        if (!user) throw new NotFoundException('USER_NOT_FOUND')
+        return user
     }
 
     async deleteUser(id: string): Promise<void> {
-        try {
-            const isDeleted = await this.usersRepository.softDelete(id)
-            if (!isDeleted) {
-                throw new NotFoundException('user tidak dapat ditemukan')
-            }
-        } catch (e) {
-            throw new BadRequestException('id yang dimasukkan tidak terdaftar')
+        const isDeleted = await this.usersRepository.softDelete(id)
+        if (!isDeleted) {
+            throw new NotFoundException('USER_NOT_FOUND')
         }
     }
 }

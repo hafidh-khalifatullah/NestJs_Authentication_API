@@ -8,7 +8,7 @@ export class UsersRepository {
         private readonly pg: Pool
     ) { }
 
-    async create(name: string, password: string, email: string): Promise<Omit<User, 'password'> | undefined> {
+    async create(name: string, password: string, email: string): Promise<Omit<User, 'password'>> {
         const query: string = `
             INSERT INTO users (name, password, email)
             VALUES ($1, $2, $3) 
@@ -51,7 +51,7 @@ export class UsersRepository {
         return user
     }
 
-    async update(id: string, update: Partial<Omit<User, 'id' | 'password'>>): Promise<Omit<User, 'password'> | undefined> {
+    async update(id: string, update: Partial<Omit<User, 'id' | 'password'>>): Promise<Omit<User, 'password'>> {
         const entries = Object.entries(update)
         const setClause = entries
             .map(([key], index) => `${key} = $${index + 1}`)

@@ -11,12 +11,12 @@ export class UsersController {
 
     @UseGuards(AuthGuard)
     @Get()
-    async readUsers(): Promise<User[]> {
+    async readUsers(): Promise<Omit<User, 'password'>[]> {
         return await this.usersService.getUsers()
     }
 
     @Get(':id')
-    async readUserById(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
+    async readUserById(@Param('id', ParseUUIDPipe) id: string): Promise<Omit<User, 'password'>> {
         return await this.usersService.getUsersById(id)
     }
 
@@ -24,7 +24,7 @@ export class UsersController {
     async updateUser(
         @Param('id', ParseUUIDPipe) id: string,
         @Body() updateUserDto: UpdateUserDto
-    ): Promise<User> {
+    ): Promise<Omit<User, 'password'>> {
         return await this.usersService.updateUser(id, updateUserDto)
     }
 
