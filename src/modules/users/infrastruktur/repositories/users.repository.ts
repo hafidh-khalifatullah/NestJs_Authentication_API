@@ -1,5 +1,5 @@
 import { Pool } from 'pg'
-import { User } from '../interface/user'
+import { User } from '../../domain/entities/user'
 import { Inject } from '@nestjs/common'
 import { PG_CONNECTION } from 'src/database/database.constants'
 export class UsersRepository {
@@ -19,7 +19,7 @@ export class UsersRepository {
         return user
     }
 
-    async findAll(): Promise<Omit<User, "password">[] | []> {
+    async findAll(): Promise<Omit<User, "password">[]> {
         const query: string = `
             SELECT id, name, email, role, status FROM users
             WHERE deleted_at IS NULL

@@ -1,8 +1,8 @@
-import { Controller, Get, Param, ParseUUIDPipe, Post, Body, Patch, Delete, UseGuards } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { User } from './interface/user';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { Controller, Get, Param, ParseUUIDPipe, Body, Patch, Delete, UseGuards } from '@nestjs/common';
+import { UsersService } from '../../application/users.service';
+import { User } from '../../domain/entities/user';
+import { UpdateUserDto } from '../../application/dto/update-user.dto';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 @Controller('users')
 export class UsersController {
     constructor(

@@ -66,27 +66,74 @@ The project follows the **modular architecture** recommended by NestJS.
 
 ```
 src
-│
-├── modules
-│   ├── auth
-│   │   ├── auth.controller.ts
-│   │   ├── auth.service.ts
-│   │   ├── auth.guard.ts
-│   │   └── dto
+├───common
+│   ├───exceptions
+│   ├───guards
+│   │       auth.guard.ts
 │   │
-│   └── users
-│       ├── users.service.ts
-│       └── users.repository.ts
+│   ├───logger
+│   └───utils
+│           users.pg-error-map.ts
 │
-├── database
-│   ├── postgres.module.ts
-│   └── postgres.provider.ts
+├───config
+├───database
+│       database.constants.ts
+│       database.module.ts
+│       database.service.spec.ts
 │
-├── common
-│   ├── guards
-│   └── utils
-│
-└── main.ts
+└───modules
+    ├───auth
+    │   │   auth.constants.ts
+    │   │   auth.controller.spec.ts
+    │   │   auth.controller.ts
+    │   │   auth.module.ts
+    │   │   auth.service.spec.ts
+    │   │
+    │   ├───dto
+    │   │       login.dto.ts
+    │   │       register.dto.ts
+    │   │
+    │   ├───helper
+    │   │       date.ts
+    │   │
+    │   ├───interface
+    │   │       hashing-service.ts
+    │   │       refresh-token.ts
+    │   │
+    │   ├───repository
+    │   │       refresh_token.repository.ts
+    │   │
+    │   └───service
+    │           auth.service.ts
+    │           bcrypt.service.ts
+    │           sha256.service.ts
+    │
+    └───users
+        │   users.module.ts
+        │
+        ├───application
+        │   │   users.service.spec.ts
+        │   │   users.service.ts
+        │   │
+        │   └───dto
+        │           update-user.dto.ts
+        │
+        ├───domain
+        │   ├───entities
+        │   │       user.ts
+        │   │
+        │   ├───repositories
+        │   └───services
+        ├───infrastruktur
+        │   ├───queries
+        │   └───repositories
+        │           users.repository.ts
+        │
+        └───presentation
+            │   users.controller.spec.ts
+            │
+            └───controllers
+                    users.controller.ts
 ```
 
 Key design decisions:

@@ -1,6 +1,6 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { Transform } from 'class-transformer'
-import { Role, Status } from '../interface/user'
+import { Role, Status } from '../../domain/entities/user'
 export class UpdateUserDto {
     @IsOptional()
     @IsNotEmpty()
