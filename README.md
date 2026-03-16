@@ -84,29 +84,37 @@ src
 └───modules
     ├───auth
     │   │   auth.constants.ts
-    │   │   auth.controller.spec.ts
-    │   │   auth.controller.ts
     │   │   auth.module.ts
-    │   │   auth.service.spec.ts
     │   │
-    │   ├───dto
-    │   │       login.dto.ts
-    │   │       register.dto.ts
+    │   ├───aplication
+    │   │   │   auth.service.spec.ts
+    │   │   │   auth.service.ts
+    │   │   │
+    │   │   └───dto
+    │   │           login.dto.ts
+    │   │           register.dto.ts
+    │   │
+    │   ├───domain
+    │   │   ├───entities
+    │   │   │       hashing-service.ts
+    │   │   │       refresh-token.ts
+    │   │   │
+    │   │   └───service
+    │   │           bcrypt.service.ts
+    │   │           sha256.service.ts
     │   │
     │   ├───helper
     │   │       date.ts
     │   │
-    │   ├───interface
-    │   │       hashing-service.ts
-    │   │       refresh-token.ts
+    │   ├───infrastructure
+    │   │   └───repository
+    │   │           refresh_token.repository.ts
     │   │
-    │   ├───repository
-    │   │       refresh_token.repository.ts
-    │   │
-    │   └───service
-    │           auth.service.ts
-    │           bcrypt.service.ts
-    │           sha256.service.ts
+    │   └───presentation
+    │       │   auth.controller.spec.ts
+    │       │
+    │       └───controllers
+    │               auth.controller.ts
     │
     └───users
         │   users.module.ts
@@ -124,7 +132,7 @@ src
         │   │
         │   ├───repositories
         │   └───services
-        ├───infrastruktur
+        ├───infrasturcture
         │   ├───queries
         │   └───repositories
         │           users.repository.ts
